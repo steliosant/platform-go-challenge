@@ -1,8 +1,6 @@
 -- CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE DATABASE dashboard;
-
 -- USERS
 CREATE TABLE users (
     id TEXT PRIMARY KEY,
@@ -21,10 +19,11 @@ CREATE TABLE assets (
     created_at TIMESTAMP DEFAULT now()
 );
 
--- FAVORITES
-CREATE TABLE favorites (
+-- FAVOURITES
+CREATE TABLE favourites (
     user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
     asset_id UUID REFERENCES assets(id) ON DELETE CASCADE,
+  description TEXT,
     created_at TIMESTAMP DEFAULT now(),
     PRIMARY KEY (user_id, asset_id)
 );
@@ -47,3 +46,18 @@ INSERT INTO assets (type, title, description, data) VALUES
   'Monthly purchases',
   '{"x":["18-24","25-34"],"y":[5,9]}'
 );
+
+-- Seed a couple of favourites linked to the inserted assets
+INSERT INTO favourites (user_id, asset_id, description)
+VALUES
+  (
+    'u1',
+    (SELECT id FROM assets WHERE title = 'Social Media Usage' LIMIT 1),
+    'Interesting social insight'
+  ),
+  (
+    'u2',
+    (SELECT id FROM assets WHERE title = 'Purchases per Age Group' LIMIT 1),
+    'Chart I like to watch'
+  )
+ON CONFLICT DO NOTHING;

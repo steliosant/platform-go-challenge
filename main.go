@@ -35,7 +35,10 @@ func main() {
 
 	// ---- router ----
 	mux := http.NewServeMux()
+	mux.HandleFunc("/users", handlers.UserRouter(database))
 	mux.Handle("/users/", handlers.FavouritesRouter(database))
+	mux.HandleFunc("/assets", handlers.AssetsRouter(database))
+	mux.Handle("/assets/", handlers.AssetsRouter(database))
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
