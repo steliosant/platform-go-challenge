@@ -1,11 +1,70 @@
 package repositories
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 
 	"platform-go-challenge/models"
 )
+
+func CreateAsset(
+	ctx context.Context,
+	db *sql.DB,
+	asset models.Asset,
+	description *string,
+) (string, error) {
+	query := `
+	INSERT INTO assets (type, title, description, data)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id;
+	`
+
+	var assetID string
+	err := db.QueryRowContext(
+		ctx,
+		query,
+		asset.Type,
+		asset.Title,
+		description,
+		asset.Data,
+	).Scan(&assetID)
+	if err != nil {
+		return "", err
+	}
+
+	return assetID, nil
+}
+
+func GetAssetByID(
+	ctx context.Context,
+	db *sql.DB,
+	assetID string,
+) (*models.Asset, error) {
+	query := `
+	SELECT id, type, title, data, created_at
+	FROM assets
+	WHERE id = $1;
+	`
+
+	var asset models.Asset
+	err := db.QueryRowContext(ctx, query, assetID).Scan(
+		&asset.ID,
+		&asset.Type,
+		&asset.Title,
+		&asset.Data,
+		&asset.CreatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &asset, nil
+}
 
 func unmarshalAssetData(
 	assetType models.AssetType,
@@ -41,4 +100,3 @@ func unmarshalAssetData(
 		return nil, fmt.Errorf("unknown asset type: %s", assetType)
 	}
 }
-

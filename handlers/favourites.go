@@ -58,11 +58,18 @@ func AddFavourite(db DB) http.HandlerFunc {
 			input.Description,
 		)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			println("Error adding favourite:", err.Error())
+			http.Error(w, "Failed to add favourite: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(map[string]string{
+			"user_id":  userID,
+			"asset_id": input.AssetID,
+			"message":  "Favourite added successfully",
+		})
 	}
 }
 

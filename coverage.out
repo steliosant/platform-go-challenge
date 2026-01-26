@@ -1,0 +1,19 @@
+mode: set
+platform-go-challenge/main.go:20.38,22.15 2 1
+platform-go-challenge/main.go:22.15,24.3 1 1
+platform-go-challenge/main.go:26.2,27.16 2 1
+platform-go-challenge/main.go:27.16,29.3 1 1
+platform-go-challenge/main.go:31.2,31.22 1 0
+platform-go-challenge/main.go:34.48,42.16 7 1
+platform-go-challenge/main.go:42.16,44.3 1 1
+platform-go-challenge/main.go:46.2,49.3 1 1
+platform-go-challenge/main.go:52.13,54.40 1 0
+platform-go-challenge/main.go:54.40,56.3 1 0
+platform-go-challenge/main.go:59.2,60.16 2 0
+platform-go-challenge/main.go:60.16,62.3 1 0
+platform-go-challenge/main.go:63.2,69.12 3 0
+platform-go-challenge/main.go:69.12,71.80 2 0
+platform-go-challenge/main.go:71.80,73.4 1 0
+platform-go-challenge/main.go:76.2,85.45 7 0
+platform-go-challenge/main.go:85.45,87.3 1 0
+platform-go-challenge/main.go:89.2,89.42 1 0

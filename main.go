@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,37 +17,56 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main() {
-	// Load .env (no-op in prod)
-	if err := godotenv.Load(); err != nil {
-		log.Println("⚠️  No .env file found (this is fine in prod)")
-	}
-	// now os.Getenv works as usual
-	// ---- configuration ----
+func initDatabase() (*sql.DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		log.Fatal("DATABASE_URL is not set")
+		return nil, errors.New("DATABASE_URL is not set")
 	}
 
-	// ---- database ----
 	database, err := db.New(dsn)
 	if err != nil {
-		log.Fatalf("failed to connect to db: %v", err)
+		return nil, fmt.Errorf("failed to connect to db: %w", err)
 	}
-	defer database.Close()
 
-	// ---- router ----
+	return database, nil
+}
+
+func initServer(database *sql.DB) *http.Server {
 	mux := http.NewServeMux()
-	mux.Handle("/users/", handlers.FavouritesRouter(database))
+	// Public routes
+	mux.HandleFunc("/login", handlers.Login(database))
+
+	// Protected routes
+	mux.HandleFunc("/users", handlers.AuthMiddleware(handlers.UserRouter(database)))
+	mux.Handle("/users/", handlers.AuthMiddleware(handlers.FavouritesRouter(database)))
+	mux.HandleFunc("/assets", handlers.AuthMiddleware(handlers.AssetsRouter(database)))
+	mux.Handle("/assets/", handlers.AuthMiddleware(handlers.AssetsRouter(database)))
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	server := &http.Server{
+	return &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
 	}
+}
+
+func main() {
+	// Load .env (no-op in prod)
+	if err := godotenv.Load(); err != nil {
+		log.Println("⚠️  No .env file found (this is fine in prod)")
+	}
+
+	// ---- database ----
+	database, err := initDatabase()
+	if err != nil {
+		log.Fatalf("database initialization failed: %v", err)
+	}
+	defer database.Close()
+
+	// ---- server ----
+	server := initServer(database)
 
 	// ---- graceful shutdown ----
 	go func() {
