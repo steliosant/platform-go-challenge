@@ -45,17 +45,6 @@ func AssetsRouter(db DB) http.HandlerFunc {
 	}
 }
 
-// CreateAsset creates a new asset
-// @Summary Create a new asset
-// @Description Add a new asset (chart, insight, or audience) to the system
-// @Tags assets
-// @Accept json
-// @Produce json
-// @Param asset body object true "Asset object with type, title, description, and data"
-// @Success 201 {object} object "Asset created"
-// @Failure 400 {string} string "Bad request"
-// @Failure 500 {string} string "Internal server error"
-// @Router /assets [post]
 func CreateAsset(db DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

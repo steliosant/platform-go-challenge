@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	_ "platform-go-challenge/docs"
 )
 
 func initDatabase() (*sql.DB, error) {
@@ -34,22 +33,14 @@ func initDatabase() (*sql.DB, error) {
 
 func initServer(database *sql.DB) *http.Server {
 	mux := http.NewServeMux()
-	
-	// Swagger API documentation - serve from docs directory
-	swaggerHandler := http.FileServer(http.Dir("./docs"))
-	mux.Handle("/swagger/", http.StripPrefix("/swagger", swaggerHandler))
-	
-	// Redirect /swagger to /swagger/ for UI
-	mux.HandleFunc("/api/swagger", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)
-	})
-	
-	// API endpoints
-	mux.HandleFunc("/users", handlers.UserRouter(database))
-	mux.Handle("/users/", handlers.FavouritesRouter(database))
-	mux.HandleFunc("/assets", handlers.AssetsRouter(database))
-	mux.Handle("/assets/", handlers.AssetsRouter(database))
+	// Public routes
+	mux.HandleFunc("/login", handlers.Login(database))
 
+	// Protected routes
+	mux.HandleFunc("/users", handlers.AuthMiddleware(handlers.UserRouter(database)))
+	mux.Handle("/users/", handlers.AuthMiddleware(handlers.FavouritesRouter(database)))
+	mux.HandleFunc("/assets", handlers.AuthMiddleware(handlers.AssetsRouter(database)))
+	mux.Handle("/assets/", handlers.AuthMiddleware(handlers.AssetsRouter(database)))
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

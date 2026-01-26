@@ -4,7 +4,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- USERS
 CREATE TABLE users (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    password_hash TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMP DEFAULT now()
 );
 
 -- ASSETS
@@ -29,9 +31,9 @@ CREATE TABLE favourites (
 );
 
 -- SEED DATA
-INSERT INTO users (id, name) VALUES
-('u1', 'Alice'),
-('u2', 'Bob');
+INSERT INTO users (id, name, password_hash) VALUES
+('u1', 'Alice', '$2a$10$q8PPH5ykvZ24Sq9Gu0QC6OfYVWYw5cQnczvDcUC3HWjDDixSf.I3.'),
+('u2', 'Bob', '$2a$10$HXoxscLQW5pjFX3CxTyka./faujDQzJzlLgFPcE3zZ0cnd.RNRMHe');
 
 INSERT INTO assets (type, title, description, data) VALUES
 (

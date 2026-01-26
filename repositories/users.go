@@ -13,13 +13,13 @@ func CreateUser(
 	user models.User,
 ) (string, error) {
 	query := `
-	INSERT INTO users (id, name)
-	VALUES ($1, $2)
+	INSERT INTO users (id, name, password_hash)
+	VALUES ($1, $2, $3)
 	RETURNING id;
 	`
 
 	var userID string
-	err := db.QueryRowContext(ctx, query, user.ID, user.Name).Scan(&userID)
+	err := db.QueryRowContext(ctx, query, user.ID, user.Name, user.PasswordHash).Scan(&userID)
 	if err != nil {
 		return "", err
 	}
@@ -33,13 +33,13 @@ func GetUserByID(
 	userID string,
 ) (*models.User, error) {
 	query := `
-	SELECT id, name
+	SELECT id, name, password_hash
 	FROM users
 	WHERE id = $1;
 	`
 
 	var user models.User
-	err := db.QueryRowContext(ctx, query, userID).Scan(&user.ID, &user.Name)
+	err := db.QueryRowContext(ctx, query, userID).Scan(&user.ID, &user.Name, &user.PasswordHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -55,7 +55,7 @@ func ListUsers(
 	db *sql.DB,
 ) ([]models.User, error) {
 	query := `
-	SELECT id, name
+	SELECT id, name, password_hash
 	FROM users
 	ORDER BY id;
 	`
@@ -69,7 +69,7 @@ func ListUsers(
 	var users []models.User
 	for rows.Next() {
 		var u models.User
-		if err := rows.Scan(&u.ID, &u.Name); err != nil {
+		if err := rows.Scan(&u.ID, &u.Name, &u.PasswordHash); err != nil {
 			return nil, err
 		}
 		users = append(users, u)
