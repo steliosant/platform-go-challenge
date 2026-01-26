@@ -9,6 +9,7 @@ func UserRouter(db DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Expected paths:
 		// POST /users - Create a new user
+		// GET /users - List all users
 		// GET /users/{userID} - Get user by ID
 
 		parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -27,13 +28,13 @@ func UserRouter(db DB) http.HandlerFunc {
 				return
 			}
 
-			// case http.MethodGet:
-			// 	// GET /users/{userID} - Get user by ID
-			// 	if len(parts) == 2 {
-			// 		println("Get user by ID")
-			// 		GetUser(db)(w, r)
-			// 		return
-			// 	}
+		case http.MethodGet:
+			// GET /users - List all users
+			if len(parts) == 1 {
+				println("List all users")
+				GetUsers(db)(w, r)
+				return
+			}
 
 			// case http.MethodDelete:
 			// 	// DELETE /users/{userID} - Delete user
