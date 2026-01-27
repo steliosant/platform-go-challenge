@@ -10,6 +10,7 @@ services:
     environment:
       DATABASE_URL: postgres://user:password@db:5432/dashboard?sslmode=disable
       PORT: 8080
+      AUTH_DISABLED: "true"
     depends_on:
       db:
         condition: service_healthy

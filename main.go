@@ -14,8 +14,23 @@ import (
 	"syscall"
 	"time"
 
+	_ "platform-go-challenge/docs" // Import swagger docs
+
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	"github.com/joho/godotenv"
 )
+
+// @title Platform Go Challenge API
+// @version 1.0
+// @description REST API for managing users, assets, and favorites with JWT authentication
+// @host localhost:8080
+// @BasePath /
+// @schemes http
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter the token with the 'Bearer ' prefix, e.g. 'Bearer abc123'
 
 func initDatabase() (*sql.DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
@@ -33,14 +48,20 @@ func initDatabase() (*sql.DB, error) {
 
 func initServer(database *sql.DB) *http.Server {
 	mux := http.NewServeMux()
+
+	// Swagger documentation
+	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler)
+
 	// Public routes
 	mux.HandleFunc("/login", handlers.Login(database))
+	mux.HandleFunc("/register", handlers.Register(database))
 
 	// Protected routes
 	mux.HandleFunc("/users", handlers.AuthMiddleware(handlers.UserRouter(database)))
 	mux.Handle("/users/", handlers.AuthMiddleware(handlers.FavouritesRouter(database)))
 	mux.HandleFunc("/assets", handlers.AuthMiddleware(handlers.AssetsRouter(database)))
 	mux.Handle("/assets/", handlers.AuthMiddleware(handlers.AssetsRouter(database)))
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
