@@ -52,6 +52,9 @@ func initServer(database *sql.DB) *http.Server {
 	// Swagger documentation
 	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
+	// Health
+	mux.HandleFunc("/health", handlers.HealthCheck)
+
 	// Public routes
 	mux.HandleFunc("/login", handlers.Login(database))
 	mux.HandleFunc("/register", handlers.Register(database))
