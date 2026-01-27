@@ -33,6 +33,12 @@ func AssetsRouter(db DB) http.HandlerFunc {
 			}
 
 		case http.MethodGet:
+			// GET /assets - List all assets
+			if len(parts) == 1 {
+				println("List all assets")
+				GetAllAssets(db)(w, r)
+				return
+			}
 			// GET /assets/{assetID} - Get asset by ID
 			if len(parts) == 2 {
 				println("Get asset by ID")
@@ -120,5 +126,19 @@ func GetAsset(db DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(asset)
+	}
+}
+
+func GetAllAssets(db DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		assets, err := repositories.ListAssets(r.Context(), db.(*sql.DB))
+		if err != nil {
+			http.Error(w, "Failed to fetch assets: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(assets)
 	}
 }

@@ -66,6 +66,38 @@ func GetAssetByID(
 	return &asset, nil
 }
 
+func ListAssets(
+	ctx context.Context,
+	db *sql.DB,
+) ([]models.Asset, error) {
+	query := `
+	SELECT id, type, title, data, created_at
+	FROM assets
+	ORDER BY created_at DESC;
+	`
+
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var assets []models.Asset
+	for rows.Next() {
+		var a models.Asset
+		if err := rows.Scan(&a.ID, &a.Type, &a.Title, &a.Data, &a.CreatedAt); err != nil {
+			return nil, err
+		}
+		assets = append(assets, a)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return assets, nil
+}
+
 func unmarshalAssetData(
 	assetType models.AssetType,
 	raw json.RawMessage,

@@ -9,6 +9,7 @@ import (
 )
 
 var jwtSecret []byte
+var authEnabled bool
 
 func init() {
 	secret := os.Getenv("JWT_SECRET")
@@ -16,10 +17,18 @@ func init() {
 		secret = "your-secret-key-change-in-production" // Fallback for dev
 	}
 	jwtSecret = []byte(secret)
+
+	// Auth is enabled by default; disable by setting AUTH_DISABLED=true
+	authEnabled = os.Getenv("AUTH_DISABLED") != "true"
 }
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !authEnabled {
+			next(w, r)
+			return
+		}
+
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
 			http.Error(w, "Missing authorization header", http.StatusUnauthorized)
