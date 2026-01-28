@@ -1,6 +1,19 @@
 # Platform Go Challenge API
 
-REST API for users, assets, and favourites with JWT authentication. Ships with Docker, Swagger UI, and seed data so you can try it immediately.
+Go-Based REST API for users, assets, and favourites with JWT authentication. Ships with Docker, Swagger UI, and seed data so you can try it immediately.
+This application was made as a deliverble for GWI Engineering Challenge.
+It covers all the basic requirements: 
+- Web server 
+- Endpoint that receives user Id and returns user's favorite assets
+- Endpoints that would add an asset to favourites, remove it, or edit its description
+- Data structure of the assets
+
+Extra attributes:
+- PostgreSQL database
+- Dockerfile and docker-compose.yml
+- unit tests
+- swagger documentation
+- JWT authentication (no user roles specified)
 
 ## Stack
 - Go 1.25.6
@@ -15,9 +28,9 @@ REST API for users, assets, and favourites with JWT authentication. Ships with D
 cd docker
 docker compose up --build
 ```
-- API: http://localhost:8000
+- API: http://localhost:8080
 - Swagger UI: http://localhost:8000/swagger/index.html
-- Adminer (DB UI): http://localhost:8080 (system=PostgreSQL, server=db, user=password as below)
+- Adminer (DB UI): http://localhost:8081 (System=PostgreSQL, Server=platform-db, Username=user, Password=password as below)
 
 ## Quickstart (local without Docker)
 1) Start PostgreSQL and create the database:
@@ -50,11 +63,13 @@ Include the token in `Authorization: Bearer <token>` for protected routes.
 
 ## Endpoints (summary)
 - Auth: POST /login, POST /register
+- Health: GET /health
 - Users: GET /users, POST /users
 - Favourites: GET /users/{userId}/favourites, POST /users/{userId}/favourites, PATCH /users/{userId}/favourites/{assetId}, DELETE /users/{userId}/favourites/{assetId}
 - Assets: GET /assets/{id}, POST /assets
 
 See full request/response schemas in Swagger UI.
+http://localhost:8080/swagger/index.html#/
 
 ## Database seeding
 `db/init/001_init.sql` creates tables and seeds:
