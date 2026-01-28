@@ -29,37 +29,48 @@ cd docker
 docker compose up --build
 ```
 - API: http://localhost:8080
-- Swagger UI: http://localhost:8000/swagger/index.html
+- Swagger UI: http://localhost:8080/swagger/index.html
 - Adminer (DB UI): http://localhost:8081 (System=PostgreSQL, Server=platform-db, Username=user, Password=password as below)
 
-## Quickstart (local without Docker)
-1) Start PostgreSQL and create the database:
-```bash
-createdb dashboard
-psql dashboard -c "CREATE USER user WITH PASSWORD 'password';"
-psql dashboard -c "GRANT ALL PRIVILEGES ON DATABASE dashboard TO user;"
-psql dashboard -f db/init/001_init.sql
-```
-2) Run the API:
-```bash
-DATABASE_URL=postgres://user:password@localhost:5432/dashboard?sslmode=disable PORT=8080 go run main.go
-```
-API will be at http://localhost:8080.
-
 ## Authentication
-- JWT bearer tokens, signed with HS256.
-- Configure secret with env `JWT_SECRET` (defaults to a dev fallback).
-- To disable auth for testing, set `AUTH_DISABLED=true` (all protected endpoints become open).
 
-### Seeded users
-- u1 / alice123
-- u2 / bob123
+The API uses **JWT (JSON Web Tokens)** for authentication. All protected endpoints require a valid JWT bearer token in the `Authorization` header.
 
-### Auth endpoints
-- POST /register — create user (id, name, password)
-- POST /login — returns JWT token
+### How JWT Authentication Works
+1. **Register or Login**: Call `POST /register` or `POST /login` with credentials to receive a JWT token
+2. **Include Token**: Add the token to subsequent requests using the header: `Authorization: Bearer <your_token>`
+3. **Token Validation**: The API validates the token signature and expiration on each protected route
+4. **Token Expiration**: Tokens expire after 24 hours by default
 
-Include the token in `Authorization: Bearer <token>` for protected routes.
+### Configuration
+- **`JWT_SECRET`**: Environment variable for signing tokens (defaults to dev secret if not set)
+- **`AUTH_DISABLED=true`**: Bypass authentication for local testing (not recommended for production)
+- **Algorithm**: HS256 (HMAC with SHA-256)
+
+### Seeded Users (for testing)
+- **User ID**: `u1` / **Password**: `alice123`
+- **User ID**: `u2` / **Password**: `bob123`
+
+### Authentication Endpoints
+- **POST /register** — Create new user (requires: `id`, `name`, `password`)
+- **POST /login** — Authenticate and get JWT token (requires: `id`, `password`)
+
+### Example Usage
+```bash
+# 1. Login to get token
+curl -X POST http://localhost:8080/login \
+  -H "Content-Type: application/json" \
+  -d '{"id":"u1","password":"alice123"}'
+
+# Response: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
+
+# 2. Use token for protected endpoints
+curl -X GET http://localhost:8080/users/u1/favourites \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Protected Routes
+All `/users/*` endpoints require valid JWT authentication (unless `AUTH_DISABLED=true`).
 
 ## Endpoints (summary)
 - Auth: POST /login, POST /register
@@ -89,6 +100,6 @@ go test ./...
 - `AUTH_DISABLED`: set to `true` to bypass auth checks (use only for local testing).
 
 ## Useful URLs (Docker defaults)
-- API base: http://localhost:8000
-- Swagger: http://localhost:8000/swagger/index.html
-- Adminer: http://localhost:8080 (server=db, user=user, password=password, database=dashboard)
+- API base: http://localhost:8080
+- Swagger: http://localhost:8080/swagger/index.html
+- Adminer: http://localhost:8081 (server=db, user=user, password=password, database=dashboard)
